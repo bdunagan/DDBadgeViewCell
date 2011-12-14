@@ -74,9 +74,13 @@
     UIColor *currentDetailColor = [UIColor grayColor];
     UIColor *currentBadgeColor = self.cell.badgeColor;
     if (!currentBadgeColor) {
-        currentBadgeColor = [UIColor colorWithRed:0.53 green:0.6 blue:0.738 alpha:1.];
+        currentBadgeColor = [UIColor colorWithRed:0.55 green:0.6 blue:0.69 alpha:1.];
     }
-    
+    UIColor *currentBadgeShadowColor = self.cell.badgeShadowColor;
+    if (!currentBadgeShadowColor) {
+        currentBadgeShadowColor = [UIColor colorWithRed:0.45 green:0.49 blue:0.57 alpha:1.];
+    }
+
 	if (self.cell.isHighlighted || self.cell.isSelected) {
         currentSummaryColor = [UIColor whiteColor];
         currentDetailColor = [UIColor whiteColor];
@@ -93,24 +97,59 @@
 		[currentDetailColor set];
 		[self.cell.detail drawAtPoint:CGPointMake(10, 32) forWidth:rect.size.width withFont:[UIFont systemFontOfSize:14.] lineBreakMode:UILineBreakModeTailTruncation];		
 	} else {
-		CGSize badgeTextSize = [self.cell.badgeText sizeWithFont:[UIFont boldSystemFontOfSize:13.]];
+        // Set up the badge's frame.
+		CGSize badgeTextSize = [self.cell.badgeText sizeWithFont:[UIFont boldSystemFontOfSize:18.]];
 		CGRect badgeViewFrame = CGRectIntegral(CGRectMake(rect.size.width - badgeTextSize.width - 24, (rect.size.height - badgeTextSize.height - 4) / 2, badgeTextSize.width + 14, badgeTextSize.height + 4));
+        if ([self.cell.badgeText length] < 3) {
+            // Fix the width for 1-2 characters.
+            badgeViewFrame = CGRectIntegral(CGRectMake(rect.size.width - 46, 13, 34, 25));
+        }
 		
+		// Draw the badge shadow.
+		CGContextSaveGState(context);
+		CGContextSetFillColorWithColor(context, currentBadgeShadowColor.CGColor);
+		CGMutablePathRef shadowPath = CGPathCreateMutable();
+		CGPathAddArc(shadowPath, NULL, badgeViewFrame.origin.x + badgeViewFrame.size.width - badgeViewFrame.size.height / 2, badgeViewFrame.origin.y + badgeViewFrame.size.height / 2, badgeViewFrame.size.height / 2, M_PI / 2, M_PI * 3 / 2, YES);
+		CGPathAddArc(shadowPath, NULL, badgeViewFrame.origin.x + badgeViewFrame.size.height / 2, badgeViewFrame.origin.y + badgeViewFrame.size.height / 2, badgeViewFrame.size.height / 2, M_PI * 3 / 2, M_PI / 2, YES);
+		CGContextAddPath(context, shadowPath);
+		CGContextDrawPath(context, kCGPathFill);
+		CFRelease(shadowPath);
+		CGContextRestoreGState(context);
+
+		// Draw the badge.
 		CGContextSaveGState(context);	
 		CGContextSetFillColorWithColor(context, currentBadgeColor.CGColor);
 		CGMutablePathRef path = CGPathCreateMutable();
-		CGPathAddArc(path, NULL, badgeViewFrame.origin.x + badgeViewFrame.size.width - badgeViewFrame.size.height / 2, badgeViewFrame.origin.y + badgeViewFrame.size.height / 2, badgeViewFrame.size.height / 2, M_PI / 2, M_PI * 3 / 2, YES);
-		CGPathAddArc(path, NULL, badgeViewFrame.origin.x + badgeViewFrame.size.height / 2, badgeViewFrame.origin.y + badgeViewFrame.size.height / 2, badgeViewFrame.size.height / 2, M_PI * 3 / 2, M_PI / 2, YES);
+		CGPathAddArc(path, NULL, badgeViewFrame.origin.x + badgeViewFrame.size.width - badgeViewFrame.size.height / 2, badgeViewFrame.origin.y + badgeViewFrame.size.height / 2 + 1, badgeViewFrame.size.height / 2, M_PI / 2, M_PI * 3 / 2, YES);
+		CGPathAddArc(path, NULL, badgeViewFrame.origin.x + badgeViewFrame.size.height / 2, badgeViewFrame.origin.y + badgeViewFrame.size.height / 2 + 1, badgeViewFrame.size.height / 2, M_PI * 3 / 2, M_PI / 2, YES);
 		CGContextAddPath(context, path);
 		CGContextDrawPath(context, kCGPathFill);
 		CFRelease(path);
 		CGContextRestoreGState(context);
-		
-		CGContextSaveGState(context);	
+
+        // Draw the number on the badge.
+		CGContextSaveGState(context);
 		CGContextSetBlendMode(context, kCGBlendModeClear);
-		[self.cell.badgeText drawInRect:CGRectInset(badgeViewFrame, 7, 2) withFont:[UIFont boldSystemFontOfSize:13.]];
+		if ([self.cell.badgeText length] == 1) {
+			// CGRectInset cuts off the label by a couple pixels, so need a bit more tweaking.
+			CGRect badgeTextFrame = CGRectInset(badgeViewFrame, 11, 2);
+			badgeTextFrame = CGRectMake(badgeTextFrame.origin.x + 1, badgeTextFrame.origin.y, badgeTextFrame.size.width + 2, badgeTextFrame.size.height);
+			[self.cell.badgeText drawInRect:badgeTextFrame withFont:[UIFont boldSystemFontOfSize:18]];
+		}
+		else if ([self.cell.badgeText length] == 2) {
+			// CGRectInset cuts off the label by a couple pixels, so need a bit more tweaking.
+			CGRect badgeTextFrame = CGRectInset(badgeViewFrame, 6, 2);
+			badgeTextFrame = CGRectMake(badgeTextFrame.origin.x + 1, badgeTextFrame.origin.y, badgeTextFrame.size.width + 4, badgeTextFrame.size.height);
+			[self.cell.badgeText drawInRect:badgeTextFrame withFont:[UIFont boldSystemFontOfSize:18]];
+		}
+		else {
+			CGRect badgeTextFrame = CGRectInset(badgeViewFrame, 7, 2);
+			badgeTextFrame = CGRectMake(badgeTextFrame.origin.x, badgeTextFrame.origin.y + 1, badgeTextFrame.size.width + 4, badgeTextFrame.size.height);
+            [self.cell.badgeText drawInRect:badgeTextFrame withFont:[UIFont boldSystemFontOfSize:18.]];
+            CGContextRestoreGState(context);
+		}
 		CGContextRestoreGState(context);
-		
+
 		[currentSummaryColor set];
 		[self.cell.summary drawAtPoint:CGPointMake(10, 10) forWidth:(rect.size.width - badgeViewFrame.size.width - 24) withFont:[UIFont boldSystemFontOfSize:18.] lineBreakMode:UILineBreakModeTailTruncation];
 		
@@ -138,6 +177,7 @@
 @synthesize badgeView = badgeView_;
 @synthesize badgeText = badgeText_;
 @synthesize badgeColor = badgeColor_;
+@synthesize badgeShadowColor = badgeShadowColor_;
 @synthesize badgeHighlightedColor = badgeHighlightedColor_;
 
 #pragma mark -
@@ -151,6 +191,7 @@
     [detail_ release], detail_ = nil;
 	[badgeText_ release], badgeText_ = nil;
 	[badgeColor_ release], badgeColor_ = nil;
+    [badgeShadowColor_ release], badgeShadowColor_ = nil;
 	[badgeHighlightedColor_ release], badgeHighlightedColor_ = nil;
 	
     [super dealloc];

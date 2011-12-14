@@ -38,6 +38,7 @@
 	NSString *		detail_;
 	NSString *		badgeText_;
 	UIColor *		badgeColor_;
+	UIColor *		badgeShadowColor_;
 	UIColor *		badgeHighlightedColor_;
 }
 
@@ -45,6 +46,7 @@
 @property (nonatomic, copy) NSString *      detail;
 @property (nonatomic, copy) NSString *		badgeText;
 @property (nonatomic, retain) UIColor *		badgeColor;
+@property (nonatomic, retain) UIColor *		badgeShadowColor;
 @property (nonatomic, retain) UIColor *		badgeHighlightedColor;
 
 @end
