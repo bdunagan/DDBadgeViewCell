@@ -3,7 +3,7 @@
 DDBadgeViewCell is a UITableViewCell subclass that has a customizable badge view on the right. With fast Quartz 2D path drawing and blending, one can use this with very large data set and still keep great performance when scrolling.
 
 ![](https://github.com/digdog/DDBadgeViewCell/raw/master/screenshot.png)
-![](https://github.com/digdog/DDBadgeViewCell/raw/master/screenshot2.png)
+![](https://github.com/bdunagan/DDBadgeViewCell/raw/master/screenshot2.png)
 
 ## Requirement
 
