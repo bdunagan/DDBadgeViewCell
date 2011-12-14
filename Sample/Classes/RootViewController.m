@@ -83,7 +83,6 @@
 	cell.summary = @"Summary";
 	cell.detail = @"Detail text goes here";
 	cell.badgeText = [NSString stringWithFormat:@"Row %d", indexPath.row];
-	cell.badgeColor = [UIColor orangeColor];
 
     return cell;
 }
